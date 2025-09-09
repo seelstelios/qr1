@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Δραστηριότητα</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f6f6f6; margin: 0; padding: 0; }
+    #excelTable { margin: 40px auto 10px auto; border-collapse: collapse; }
+    #excelTable td {
+      border: 1px solid #b0b0b0;
+      padding: 16px 24px;
+      min-width: 120px;
+      text-align: center;
+      background: #fff;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+      user-select: none;
+    }
+    #excelTable td.selected {
+      background: #ffe066;
+      color: #333;
+    }
+    #excelTable td.final {
+      background: #388e3c;
+      color: #fff;
+    }
+    #excelTable td:hover:not(.selected):not(.final) { background: #1976d2; color: #fff; }
+    .red-btn {
+      background: #d32f2f;
+      color: #fff;
+      padding: 16px 32px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.2em;
+      cursor: pointer;
+      margin-top: 40px;
+      position: fixed;
+      bottom: 35px;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    }
+    .hidden { display: none; }
+    #errorMsg { color: #d32f2f; font-size: 1.1em; margin-top: 18px;}
+    #chosenWord {font-size:2em; margin:30px;}
+    #finalStep { font-size: 1.3em; margin: 70px 16px 0 16px;}
+    #lexiconFrame { width:98vw; height:70vh; border:1px solid #ccc; margin-top:20px; }
+  </style>
+</head>
+<body>
+  <div id="step1">
+    <div id="excelContainer"></div>
+    <div id="errorMsg"></div>
+  </div>
+  <div id="step2" class="hidden">
+    <div id="chosenWord"></div>
+    <button class="red-btn" id="nextBtn1">Επόμενο</button>
+  </div>
+  <div id="step3" class="hidden">
+    <iframe id="lexiconFrame" src="https://www.greek-language.gr/greekLang/modern_greek/tools/lexica/triantafyllides/index.html"></iframe>
+    <button class="red-btn" id="nextBtn2">Επόμενο</button>
+  </div>
+  <div id="finalStep" class="hidden">
+    Η δραστηριότητα ολοκληρώθηκε! Ευχαριστούμε για τη συμμετοχή.
+  </div>
+<script>
+const words = [
+  "ΤΡΓΟΥΔΙΟΥ", "ΤΡΕ", "ΤΡΕΒΙ", "ΤΡΕΙΣ-ΤΕΣΣΕΡΙΣ", "ΤΡΕΛΑΜΤΦΡ", "ΤΡΕΜΠΕΛΗ",
+  "ΤΡΕΜΠΛ", "ΤΡΕΜΠΛΙΕΒ", "ΤΡΕΝΕ", "ΤΡΕΝΤ", "ΤΡΕΝΤΑΡΕ", "ΤΡΕΝΤΙΝΟ",
+  "ΤΡΕΝΤΟ", "ΤΡΕΠΑΣ", "ΤΡΕΠΛΙΕΒ", "ΤΡΕΤΙΑΚΟΦ", "ΤΡΙΑΘΛΟ", "ΤΡΙΑΝΤΑΡΟ",
+  "ΤΡΙΑΝΤΑΡΟΣ", "ΤΡΙΑΝΤΑΦΥΛΛΟΥ-ΚΑΤΣΟΥΛΗ", "ΤΡΙΑ-ΤΕΣΣΕΡΑ"
+];
+const correctWord = "ΤΡΕΝΤΑΡΕ";
+let selectedCell = null;
+
+function createExcelTable(words) {
+  let table = '<table id="excelTable"><tbody>';
+  for(let i=0; i<words.length; i++) {
+    table += `<tr><td onclick="cellClick(this)" data-word="${words[i]}">${words[i]}</td></tr>`;
+  }
+  table += '</tbody></table>';
+  return table;
+}
+
+document.getElementById('excelContainer').innerHTML = createExcelTable(words);
+
+window.cellClick = function(td) {
+  // If already selected, this is the second click: submit
+  if (td === selectedCell) {
+    td.classList.remove('selected');
+    td.classList.add('final');
+    submitWord(td.getAttribute('data-word'));
+    selectedCell = null;
+  } else {
+    // First click: mark cell as selected
+    document.querySelectorAll('#excelTable td').forEach(cell => cell.classList.remove('selected'));
+    td.classList.add('selected');
+    selectedCell = td;
+  }
+};
+
+function submitWord(word) {
+  document.getElementById('errorMsg').innerText = "";
+  if (word === correctWord) {
+    document.getElementById('step1').classList.add('hidden');
+    document.getElementById('chosenWord').innerText = word;
+    document.getElementById('step2').classList.remove('hidden');
+  } else {
+    document.getElementById('errorMsg').innerText = "Λάθος επιλογή. Δοκίμασε ξανά!";
+    // Remove selection highlight for re-try
+    document.querySelectorAll('#excelTable td').forEach(cell => cell.classList.remove('selected', 'final'));
+    selectedCell = null;
+  }
+}
+
+document.getElementById('nextBtn1').onclick = () => {
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step3').classList.remove('hidden');
+};
+document.getElementById('nextBtn2').onclick = () => {
+  document.getElementById('step3').classList.add('hidden');
+  // Open Google tab and end activity
+  window.open("https://www.google.com/search?q=%22%CF%84%CF%81%CE%B5%CE%BD%CF%84%CE%AC%CF%81%CE%B5%CE%B9%22+site%3Atovima.gr+OR+site%3Atanea.gr+OR+site%3Akathimerini.gr+OR+site%3Acnn.gr+OR+site%3Aethnos.gr+OR+site%3Ae-typos.com+OR+site%3Arizospastis.gr+OR+site%3Aavgi.gr+OR+site%3Amakthes.gr+OR+site%3Anaftemporiki.gr+OR+site%3Aefsyn.gr+OR+site%3Axrimatistirio.gr+OR+site%3Aimerisia.gr+OR+site%3Aagelioforos.gr+OR+site%3Aeleftheria.gr+OR+site%3Ain.gr+OR+site%3Acapital.gr+OR+site%3Aprotothema.gr+OR+site%3Areal.gr+OR+site%3Atopontiki.gr+OR+site%3Aautotriti.gr+OR+site%3Axe.gr+OR+site%3Adimokratianews.gr+OR+site%3Awww.sport24.gr+OR+site%3Awwww.caranddriver.com+OR+site%3Awww.gazzetta.gr+OR+site%3Alifo.gr+OR+site%3Aiefimerida.gr+OR+site%3Anewsit.gr+OR+site%3Aalfavita.gr+OR+site%3Aleft.gr+OR+site%3Amakeleio.gr+OR+site%3Adocumentonews.gr&tbs=li%3A1", "_blank");
+  document.getElementById('finalStep').classList.remove('hidden');
+};
+</script>
+</body>
+</html>
